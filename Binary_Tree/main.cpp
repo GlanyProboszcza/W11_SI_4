@@ -1,14 +1,15 @@
 #include <iostream>
 #include <vector>
+#include <string>
 
 struct Node {
-	int value{-1};
+	int value{NULL};
 	Node* left{nullptr};
 	Node* right{nullptr};
 };
 
 void addNode(Node& root, int value) {
-	if (root.value == -1) {
+	if (root.value == NULL) {
 		root.value = value;
 	}
 	else if (root.value > value) {
@@ -23,16 +24,16 @@ void addNode(Node& root, int value) {
 	}
 }
 
-Node* findNode(Node* node, int x) {
-	if (node->value == x) {
-		return node;
+Node* findNode(Node& node, int x) {
+	if (node.value == x) {
+		return &node;
 	}
 	else {
-		if (x < node->value && node->left != nullptr) {
-			return findNode(node->left, x);
+		if (x < node.value && node.left != nullptr) {
+			return findNode(*node.left, x);
 		}
-		else if (x > node->value && node->right != nullptr) {
-			return findNode(node->right, x);
+		else if (x > node.value && node.right != nullptr) {
+			return findNode(*node.right, x);
 		}
 		else
 			return nullptr;
@@ -70,16 +71,109 @@ void sortToTree(Node& root, std::vector <int> sorted, int low, int high) {
 	}
 }
 
+Node* findParent(Node& node, int value) {
+
+	if (node.left != nullptr && node.left->value == value || node.right != nullptr && node.right->value == value)
+	{
+		return &node;
+	}
+	else if ( (node.left != nullptr || node.right != nullptr) && node.value != NULL && node.value != value)
+	{
+		Node* temp;
+		if (value < node.value) {
+			temp = findParent(*node.left, value);
+		}
+		else {
+			temp = findParent(*node.right, value);
+		}
+		if (temp == nullptr || (temp->right->value == value || temp->left->value == value))
+			return temp;
+	}
+	return nullptr;
+}
+
+Node& minimumOfTheTree(Node& node) {
+	if (node.left != nullptr) {
+		minimumOfTheTree(*node.left);
+	}
+	else
+		return node;
+}
+
+Node& next(Node& node, Node& root) {
+
+	if (node.right != nullptr) {
+		return minimumOfTheTree(node);
+	}
+	else {
+		Node* helper;
+		helper = findParent(root, node.value);
+		while (helper != nullptr && node.value == helper->right->value) {
+			node = *helper;
+			helper = findParent(root, helper->value);
+		}
+	}
+}
+
+void removeNode(Node& root, int value) {
+	Node* doUsuniecia, helper, temp;
+	doUsuniecia = findNode(root, value);
+
+	// pierwszy if -----------------
+	if (doUsuniecia->left == nullptr || doUsuniecia->right == nullptr) {
+		helper = *doUsuniecia;
+	}
+	else
+		helper = next(*doUsuniecia, root);
+
+	// drugi if -----------------
+	if (helper.left != nullptr) {
+		temp = *helper.left;
+	}
+	else if (helper.right != nullptr) {
+		temp = *helper.right;
+	}
+
+	// trzeci if -----------------
+	if (&temp != nullptr) {
+		findParent(root, temp.value) == findParent(root, helper.value);
+	}
+
+	// czwarty if -----------------
+	if (findParent(root, helper.value) == nullptr)
+		root = temp;
+	else {
+		// pierwszy wewnetrzny if -----------------
+		if (&helper == findParent(root, helper.value)->left) {
+			findParent(root, helper.value)->left = &temp;
+		}
+		else
+			findParent(root, helper.value)->right = &temp;
+
+		// drugi wewnetrzny if -----------------
+		if (helper.value != value) {
+			doUsuniecia->value = helper.value;
+		}
+
+	}
+}
+
 int main()
 {
 	//std::vector <int> unsorted{ 11,2,23,14,95,66,7,88,97 };
 	std::vector <int> sorted{ 1,2,3,4,5,6,7,8,9 };
 	Node root;
 	sortToTree(root, sorted, 0, sorted.size() - 1);
-
-	/*for (auto a : sorted) {
-		addNode(root, a);
-		std::cout << "\n";
-	}*/
+	std::cout << "Print tree: " << std::endl;
 	print2(&root,0);
+
+	std::cout << std::endl;
+	std::cout << "Find parent of 5: " << ((findParent(root, 5) != nullptr) ? std::to_string(findParent(root, 5)->value) : "Parent not found") << std::endl;
+	std::cout << "Find parent of 3: " << ((findParent(root, 3) != nullptr) ? std::to_string(findParent(root, 3)->value) : "Parent not found") << std::endl;
+	std::cout << "Find node of 8: " << findNode(root, 8)->value << std::endl;
+	std::cout << "Find node of 18: " << ( (findNode(root, 18) != nullptr) ? std::to_string(findNode(root, 18)->value) : "Node not found" )<< std::endl;
+
+	removeNode(root, 9);
+	std::cout << "Print tree after remove 9: " << std::endl;
+	print2(&root, 0);
 }

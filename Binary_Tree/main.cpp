@@ -115,14 +115,14 @@ Node& next(Node& node, Node& root) {
 	}
 }
 
-struct Node* removeNode(struct Node& root, int key)
+struct Node* removeNode(struct Node& root, int value)
 {
 	if (root.value == NULL)
 		return &root;
-	if (key < root.value)
-		root.left = removeNode(*root.left, key);
-	else if (key > root.value)
-		root.right = removeNode(*root.right, key);
+	if (value < root.value)
+		root.left = removeNode(*root.left, value);
+	else if (value > root.value)
+		root.right = removeNode(*root.right, value);
 	else {
 		if (root.left == NULL && root.right == NULL)
 			return NULL;

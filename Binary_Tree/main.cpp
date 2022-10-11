@@ -115,47 +115,32 @@ Node& next(Node& node, Node& root) {
 	}
 }
 
-void removeNode(Node& root, int value) {
-	Node* doUsuniecia, helper, temp;
-	doUsuniecia = findNode(root, value);
-
-	// pierwszy if -----------------
-	if (doUsuniecia->left == nullptr || doUsuniecia->right == nullptr) {
-		helper = *doUsuniecia;
-	}
-	else
-		helper = next(*doUsuniecia, root);
-
-	// drugi if -----------------
-	if (helper.left != nullptr) {
-		temp = *helper.left;
-	}
-	else if (helper.right != nullptr) {
-		temp = *helper.right;
-	}
-
-	// trzeci if -----------------
-	if (&temp != nullptr) {
-		findParent(root, temp.value) == findParent(root, helper.value);
-	}
-
-	// czwarty if -----------------
-	if (findParent(root, helper.value) == nullptr)
-		root = temp;
+struct Node* removeNode(struct Node& root, int key)
+{
+	if (root.value == NULL)
+		return &root;
+	if (key < root.value)
+		root.left = removeNode(*root.left, key);
+	else if (key > root.value)
+		root.right = removeNode(*root.right, key);
 	else {
-		// pierwszy wewnetrzny if -----------------
-		if (&helper == findParent(root, helper.value)->left) {
-			findParent(root, helper.value)->left = &temp;
+		if (root.left == NULL && root.right == NULL)
+			return NULL;
+		else if (root.left == NULL) {
+			struct Node* temp = root.right;
+			free(&root);
+			return temp;
 		}
-		else
-			findParent(root, helper.value)->right = &temp;
-
-		// drugi wewnetrzny if -----------------
-		if (helper.value != value) {
-			doUsuniecia->value = helper.value;
+		else if (root.right == NULL) {
+			struct Node* temp = root.left;
+			free(&root);
+			return temp;
 		}
-
+		struct Node* temp = &minimumOfTheTree(*root.right);
+		root.value = temp->value;
+		root.right = removeNode(*root.right, temp->value);
 	}
+	return &root;
 }
 
 int main()
@@ -173,7 +158,7 @@ int main()
 	std::cout << "Find node of 8: " << findNode(root, 8)->value << std::endl;
 	std::cout << "Find node of 18: " << ( (findNode(root, 18) != nullptr) ? std::to_string(findNode(root, 18)->value) : "Node not found" )<< std::endl;
 
-	removeNode(root, 9);
+	removeNode(root, 5);
 	std::cout << "Print tree after remove 9: " << std::endl;
 	print2(&root, 0);
 }
